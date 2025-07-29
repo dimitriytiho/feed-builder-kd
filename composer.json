@@ -1,0 +1,23 @@
+{
+    "name": "dimitriytiho/feed-builder-kd",
+    "description": "Feed xml generator",
+    "homepage": "https://github.com/dimitriytiho/feed-builder-kd",
+    "type": "library",
+    "license": "ISC",
+    "keywords": [
+        "feed", "xml", "php"
+    ],
+    "require": {
+        "php": ">=8.1"
+    },
+    "autoload": {
+        "psr-4" : {
+            "Dimitriytiho\\FeedBuilderKd\\" : "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4" : {
+            "Dimitriytiho\\FeedBuilderKd\\" : "src/"
+        }
+    }
+}
