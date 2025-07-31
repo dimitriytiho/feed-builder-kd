@@ -45,6 +45,24 @@ class BuilderFeed
     }
 
     /**
+     * @param string $name
+     * @param string|int|float|bool|null $value
+     * @param string|null $unit
+     * @param array $attrs
+     * @param array $attrsOnlyKey
+     * @return string
+     */
+    public function param(string $name, string|int|float|bool|null $value = null, string|null $unit = null, array $attrs = [], array $attrsOnlyKey = []): string
+    {
+        $attr['name'] = $name;
+        if ($unit) {
+            $attr['unit'] = $unit;
+        }
+        $attrs = array_merge($attr, $attrs);
+        return $this->tag('param', $value, $attrs, $attrsOnlyKey);
+    }
+
+    /**
      * @param array $attrs
      * @param array $attrsOnlyKey
      * @return string
@@ -161,23 +179,30 @@ class BuilderFeed
     {
         $res = '';
         if ($offers) {
-            foreach ($offers as $key => $offer) {
-                // Options
-                $offerStr = '';
-                foreach ($offer as $optionKey => $option) {
-                    if (!empty($option['tag'])) {
-                        $offerStr .= $this->tag($option['tag'], $option['value'] ?? null, $option['attrs'] ?? [], $option['attrsOnlyKey'] ?? [], $option['end'] ?? true, $option['endSlash'] ?? false);
-                        unset($offer[$optionKey]);
+            foreach ($offers as $offer) {
+                // Tags
+                $tagsAndParams = '';
+                if (!empty($offer['tags'])) {
+                    foreach ($offer['tags'] as $tag) {
+                        if (!empty($tag['tag'])) {
+                            $tagsAndParams .= $this->tag($tag['tag'], $tag['value'] ?? null, $tag['attrs'] ?? [], $tag['attrsOnlyKey'] ?? [], $tag['end'] ?? true, $tag['endSlash'] ?? false);
+                        }
+                    }
+                }
+                // Params
+                if (!empty($offer['params'])) {
+                    foreach ($offer['params'] as $param) {
+                        if (!empty($tag['tag'])) {
+                            $tagsAndParams .= $this->param($param['name'], $param['value'] ?? null, $param['unit'] ?? null, $param['attrs'] ?? [], $param['attrsOnlyKey'] ?? []);
+                        }
                     }
                 }
                 // Offer
-                $attrs = $offer['attrs'] ?? [];
-                if (!empty($offer['id']) || !empty($offer['attrs']['id'])) {
-                    $attrs['id'] = $offer['id'] ?? $offer['attrs']['id'];
-                } else {
-                    $attrs['id'] = ++$key;
+                $offerAttrs = [];
+                if (!empty($offer['id'])) {
+                    $offerAttrs['id'] = $offer['id'];
                 }
-                $res .= $this->wrap('offer', $offerStr, $attrs, $offer['attrsOnlyKey'] ?? []);
+                $res .= $this->wrap('offer', $tagsAndParams, $offerAttrs, $offer['attrsOnlyKey'] ?? []);
             }
         }
         return $this->wrap('offers', $res);

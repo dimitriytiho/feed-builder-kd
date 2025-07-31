@@ -20,31 +20,43 @@ class TemplateFeed
      Примеры данных
      $categories = [['id' => 1,'name' => 'cat1'],['id' => 2,'name' => 'cat2', 'parent_id'=>1]];
      $offers = [
-        77 => [
-            'attrs'=>['available' => true],
-            [
-                'tag'=>'barcode',
-                'value'=>'123',
-                'attrs'=>['my' => 'attr'],
+        [
+            // Offer
+            'id' => 77,
+            'attrs' => ['available' => true],
+            'attrsOnlyKey' => ['name'],
+            // Tags
+            'tags' => [
+                [
+                    'tag' => 'barcode',
+                    'value' => '123',
+                    'attrs' => ['one' => 1],
+                    'attrsOnlyKey' => ['data_name'],
+                    'end' => true,
+                    'endSlash' => false,
+                ],
+                [
+                    'tag' => 'price',
+                    'value' => '777',
+                ],
             ],
-            [
-                'tag'=>'price',
-                'value'=>'777',
+            // Params
+            'params' => [
+                [
+                    'name' => 'weight',
+                    'value' => '11',
+                    'unit' => 'kg',
+                    'attrs' => ['two' => 2],
+                    'attrsOnlyKey' => ['data_name'],
+                ],
+                [
+                    'name' => 'height',
+                    'value' => '11',
+                    'unit' => 'kg',
+                ],
             ],
         ],
-        78 => [
-            'attrs'=>['available' => false],
-            [
-                'tag'=>'barcode',
-                'value'=>'124',
-                'attrs'=>['my' => 'attr'],
-            ],
-            [
-                'tag'=>'price',
-                'value'=>'878',
-            ],
-        ],
-     ];
+    ];
 
      */
     public function __construct(
