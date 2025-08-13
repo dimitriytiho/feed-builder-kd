@@ -136,13 +136,14 @@ class BuilderFeed
      * Key - code currency, value - rate, default RUB.
      *
      * @param array $currencies['id','rate]
+     * @param string $currencyIdDefault default RUB
      * @return string
      */
-    public function currencies(array $currencies = []): string
+    public function currencies(array $currencies = [], string $currencyIdDefault = 'RUB'): string
     {
         $res = '';
         if (!$currencies) {
-            $currencies[] = ['id' => 'RUB', 'rate' => 1];
+            $currencies[] = ['id' => $currencyIdDefault, 'rate' => 1];
         }
         foreach ($currencies as $currency) {
             $res .= $this->tag('currency', '', ['id' => $currency['id'], 'rate' => $currency['rate']], [], false, true);
@@ -173,9 +174,10 @@ class BuilderFeed
      * In offer many arrays options['tag'=>string, 'value'=>string, 'attrs'=>array, 'attrsOnlyKey'=>array, 'end'=>bool, 'endSlash'=>bool], key tag - required
      *
      * @param array $offers
+     * @param string $currencyId default RUB
      * @return string
      */
-    public function offers(array $offers = []): string
+    public function offers(array $offers = [], string $currencyId = 'RUB'): string
     {
         $res = '';
         if ($offers) {
@@ -188,6 +190,10 @@ class BuilderFeed
                             $tagsAndParams .= $this->tag($tag['tag'], $tag['value'] ?? null, $tag['attrs'] ?? [], $tag['attrsOnlyKey'] ?? [], $tag['end'] ?? true, $tag['endSlash'] ?? false);
                         }
                     }
+                }
+                // Currency
+                if ($currencyId) {
+                    $tagsAndParams .= $this->tag('currencyId', $currencyId);
                 }
                 // Params
                 if (!empty($offer['params'])) {
