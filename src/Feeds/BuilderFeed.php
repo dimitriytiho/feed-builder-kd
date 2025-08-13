@@ -160,7 +160,7 @@ class BuilderFeed
         foreach ($categories as $cat) {
             $attrs = ['id' => $cat['id']];
             if (!empty($cat['parent_id'])) {
-                $attrs['parent_id'] = $cat['parent_id'];
+                $attrs['parentId'] = $cat['parent_id'];
             }
             $res .= $this->tag('category', $cat['name'], $attrs);
         }
