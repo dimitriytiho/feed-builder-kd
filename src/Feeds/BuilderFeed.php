@@ -198,7 +198,7 @@ class BuilderFeed
                     }
                 }
                 // Offer
-                $offerAttrs = [];
+                $offerAttrs = $offer['attrs'] ?? [];
                 if (!empty($offer['id'])) {
                     $offerAttrs['id'] = $offer['id'];
                 }
