@@ -13,9 +13,9 @@ class GenerateFeed
      * @param string $url
      * @param array $categories
      * @param array $offers
-     * @param string $methodName
-     * @param string|null $putPath - if no save, then null
-     * @param string|null $disk - for Laravel
+     * @param string $methodName - название шаблона в FeedTemplate.
+     * @param string|null $putPath - путь для сохранения фида.
+     * @param string|null $disk - для Laravel можно передать имя диска, необязательный параметр.
      * @return void
      */
     public static function run(
@@ -25,7 +25,7 @@ class GenerateFeed
         array $categories,
         array $offers,
         string $methodName,
-        string|null $putPath = null,
+        string|null $putPath,
         string|null $disk = null
     ): void {
         $feedTemplate = new TemplateFeed($name, $company, $url, $categories, $offers);
