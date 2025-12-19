@@ -228,6 +228,10 @@ class BuilderFeed
                         if (!empty($tag['tag'])) {
                             // Подготавливаем значение
                             $value = $this->prepareValue($tag);
+                            // Если установлено skipIfEmpty и значение пустое не отображаем тег
+                            if (!empty($tag['skipIfEmpty']) && !$value) {
+                                continue;
+                            }
                             // Экранирование значения
                             $checkSpecialCharset = $tag['checkSpecialCharset'] ?? false;
                             if (!empty($tag['cdata'])) {
@@ -263,6 +267,10 @@ class BuilderFeed
                         if (!empty($tag['tag'])) {
                             // Подготавливаем значение
                             $value = $this->prepareValue($param);
+                            // Если установлено skipIfEmpty и значение пустое не отображаем параметр
+                            if (!empty($param['skipIfEmpty']) && !$value) {
+                                continue;
+                            }
                             $tagsAndParams .= $this->param($param['name'], $value, $param['unit'] ?? null, $param['attrs'] ?? [], $param['attrsOnlyKey'] ?? []);
                         }
                     }
