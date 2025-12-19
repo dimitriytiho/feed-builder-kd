@@ -2,7 +2,7 @@
     "name": "dimitriytiho/feed-builder-kd",
     "description": "Feed xml generator",
     "homepage": "https://github.com/dimitriytiho/feed-builder-kd",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "type": "library",
     "license": "ISC",
     "keywords": [
