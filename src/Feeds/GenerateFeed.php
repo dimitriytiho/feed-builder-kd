@@ -13,9 +13,10 @@ class GenerateFeed
      * @param string $url
      * @param array $categories
      * @param array $offers
-     * @param string $methodName - название шаблона в FeedTemplate.
      * @param string|null $putPath - путь для сохранения фида.
      * @param string|null $disk - для Laravel можно передать имя диска, необязательный параметр.
+     * @param string $currencyId - по-умолчанию RUB, можно передать любую другую валюту
+     * @param string|null $customClassTemplateFeed - по-умолчанию встроенный шаблон, можно передать название своего класса шаблона фида, например: \App\Feed\TemplateFeed::class.
      * @return void
      */
     public static function run(
@@ -24,12 +25,22 @@ class GenerateFeed
         string $url,
         array $categories,
         array $offers,
-        string $methodName,
         string|null $putPath,
-        string|null $disk = null
+        string|null $disk = null,
+        string $currencyId = 'RUB',
+        string|null $customClassTemplateFeed = null
     ): void {
-        $feedTemplate = new TemplateFeed($name, $company, $url, $categories, $offers);
-        $feed = $feedTemplate->content($methodName);
+        // Custom class template feed
+        if ($customClassTemplateFeed && class_exists($customClassTemplateFeed) && method_exists($customClassTemplateFeed, 'content')) {
+            $feedTemplate = new $customClassTemplateFeed($name, $company, $url, $categories, $offers);
+            $feed = $feedTemplate->content($currencyId);
+        } else {
+            // Default class template feed
+            $feedTemplate = new TemplateFeed($name, $company, $url, $categories, $offers);
+            $feed = $feedTemplate->content($currencyId);
+        }
+
+        // Save feed
         if ($putPath) {
             if (class_exists('\Illuminate\Support\Facades\Storage')) {
                 $aws = \Illuminate\Support\Facades\Storage::disk($disk);

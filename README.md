@@ -73,7 +73,7 @@ $offers = [
 
 // Get content feed
 $feedTemplate = new FeedTemplate($name, $company, $url, $categories, $offers);
-$feed = $feedTemplate->content('main'); // Здесь используется шаблон main из соответствующего метода в классе FeedTemplate, если он не подходит, то создайте свой метод с уникальным шаблоном.
+$feed = $feedTemplate->content('RUB'); // Здесь используется шаблон из класса FeedTemplate, если данный шаблон не подходит, то создайте свой класс и по данному примеру, обязательно реализуйте метод content, например класс: \App\Feed\TemplateFeed.
 
 ```
 
@@ -88,9 +88,10 @@ GenerateFeed::run(
     $url,
     $categories,
     $offers,
-    $methodName, // название шаблона в FeedTemplate
     $putPath, // путь для сохранения фида
     $disk // для Laravel можно передать имя диска, необязательный параметр
+    $currencyId, // по-умолчанию RUB, можно передать любую другую валюту
+    $customClassTemplateFeed // по-умолчанию встроенный шаблон, можно передать название своего класса шаблона фида, например: \App\Feed\TemplateFeed::class
 );
 
 ### Если вам не подходит данное решение через GenerateFeed::run вы можете по данному примеру создать свой класс и делать с контентом фида всё что угодно.

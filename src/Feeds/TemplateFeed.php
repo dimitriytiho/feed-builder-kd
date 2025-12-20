@@ -15,7 +15,7 @@ class TemplateFeed
 
      Запуск
     $feedTemplate = new FeedTemplate($name, $company, $url, $categories, $offers);
-    $feed = $feedTemplate->content('main'); // Здесь используется шаблон main из соответствующего метода в классе FeedTemplate, если он не подходит, то создайте свой метод с уникальным шаблоном.
+    $feed = $feedTemplate->content('RUB'); // Здесь используется шаблон из класса FeedTemplate, если данный шаблон не подходит, то создайте свой класс и по данному примеру, например: \App\Feed\TemplateFeed.
 
      Примеры данных
      // Example data, is managed from array
@@ -54,6 +54,7 @@ class TemplateFeed
                         'numberFormat' => true, // преобразуем число в строку с форматом без лишних нулей в конце
                         'implodeArr' => true, // если значение состоит из массива значений, то разбиваем вертикальной чертой каждое значение
                         'implodeJson' => true, // если значение json массив значений, то разбиваем вертикальной чертой каждое значение
+                        'skipIfEmpty' => true, // если значение пустое не отображаем тег
                     ],
                 [
                     'tag' => 'price',
@@ -94,28 +95,15 @@ class TemplateFeed
     }
 
     /**
-     * @param string $methodName
+     * @param string $currencyId
      * @return string
      */
-    public function content(string $methodName): string
-    {
-        if (method_exists($this, $methodName)) {
-            return $this->{$methodName}();
-        }
-        return '';
-    }
-
-    /**
-     * Шаблон для генерации фида.
-     *
-     * @return string
-     */
-    protected function main(): string
+    public function content(string $currencyId = 'RUB'): string
     {
         $res = $this->builder->titles($this->name, $this->company, $this->url);
-        $res .= $this->builder->currencies();
+        $res .= $this->builder->currencies(currencyIdDefault: $currencyId);
         $res .= $this->builder->categories($this->categories);
-        $res .= $this->builder->offers($this->offers);
+        $res .= $this->builder->offers($this->offers, $currencyId);
         $res = $this->builder->wrap('shop', $res);
         $res = $this->builder->wrap('yml_catalog', $res, ['date' => date(DATE_ATOM)]);
         return $this->builder->head() . $res;
