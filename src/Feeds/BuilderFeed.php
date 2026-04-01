@@ -17,7 +17,7 @@ class BuilderFeed
     public function wrap(string $tag, string|int|float|bool|null $content, array $attrs = [], array $attrsOnlyKey = []): string
     {
         $attr = $this->attrs($attrs, $attrsOnlyKey);
-        return "<{$tag}{$attr}>\n{$content}</{$tag}>\n";
+        return $tag ? "<{$tag}{$attr}>\n{$content}</{$tag}>\n" : $content;
     }
 
     /**
@@ -214,10 +214,16 @@ class BuilderFeed
      *
      * @param array $offers
      * @param string $currencyId default RUB
+     * @param string $wrapTagName
+     * @param string $tagName
      * @return string
      */
-    public function offers(array $offers = [], string $currencyId = 'RUB'): string
-    {
+    public function offers(
+        array $offers = [],
+        string $currencyId = 'RUB',
+        string $wrapTagName = 'offers',
+        string $tagName = 'offer'
+    ): string {
         $res = '';
         if ($offers) {
             foreach ($offers as $offer) {
@@ -280,10 +286,10 @@ class BuilderFeed
                 if (!empty($offer['id'])) {
                     $offerAttrs['id'] = $offer['id'];
                 }
-                $res .= $this->wrap('offer', $tagsAndParams, $offerAttrs, $offer['attrsOnlyKey'] ?? []);
+                $res .= $this->wrap($tagName, $tagsAndParams, $offerAttrs, $offer['attrsOnlyKey'] ?? []);
             }
         }
-        return $this->wrap('offers', $res);
+        return $this->wrap($wrapTagName, $res);
     }
 
     /**
