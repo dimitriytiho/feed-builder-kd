@@ -15,7 +15,7 @@ class GenerateFeed
      * @param array $offers
      * @param string|null $putPath - путь для сохранения фида.
      * @param string|null $disk - для Laravel можно передать имя диска, необязательный параметр.
-     * @param string $currencyId - по-умолчанию RUB, можно передать любую другую валюту
+     * @param string $currencyId - по-умолчанию RUR, можно передать любую другую валюту
      * @param string|null $customClassTemplateFeed - по-умолчанию встроенный шаблон, можно передать название своего класса шаблона фида, например: \App\Feed\TemplateFeed::class.
      * @return void
      */
@@ -27,7 +27,7 @@ class GenerateFeed
         array $offers,
         string|null $putPath,
         string|null $disk = null,
-        string $currencyId = 'RUB',
+        string $currencyId = 'RUR',
         string|null $customClassTemplateFeed = null
     ): void {
         // Custom class template feed

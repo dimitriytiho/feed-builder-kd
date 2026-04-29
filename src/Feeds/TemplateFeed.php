@@ -15,7 +15,7 @@ class TemplateFeed
 
      Запуск
     $feedTemplate = new FeedTemplate($name, $company, $url, $categories, $offers);
-    $feed = $feedTemplate->content('RUB'); // Здесь используется шаблон из класса FeedTemplate, если данный шаблон не подходит, то создайте свой класс и по данному примеру, например: \App\Feed\TemplateFeed.
+    $feed = $feedTemplate->content('RUR'); // Здесь используется шаблон из класса FeedTemplate, если данный шаблон не подходит, то создайте свой класс и по данному примеру, например: \App\Feed\TemplateFeed.
 
      Примеры данных
      // Example data, is managed from array
@@ -98,7 +98,7 @@ class TemplateFeed
      * @param string $currencyId
      * @return string
      */
-    public function content(string $currencyId = 'RUB'): string
+    public function content(string $currencyId = 'RUR'): string
     {
         $res = $this->builder->titles($this->name, $this->company, $this->url);
         $res .= $this->builder->currencies(currencyIdDefault: $currencyId);

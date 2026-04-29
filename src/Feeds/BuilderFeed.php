@@ -172,13 +172,13 @@ class BuilderFeed
     }
 
     /**
-     * Key - code currency, value - rate, default RUB.
+     * Key - code currency, value - rate, default RUR.
      *
      * @param array $currencies['id','rate]
-     * @param string $currencyIdDefault default RUB
+     * @param string $currencyIdDefault default RUR
      * @return string
      */
-    public function currencies(array $currencies = [], string $currencyIdDefault = 'RUB'): string
+    public function currencies(array $currencies = [], string $currencyIdDefault = 'RUR'): string
     {
         $res = '';
         if (!$currencies) {
@@ -213,14 +213,14 @@ class BuilderFeed
      * In offer many arrays options['tag'=>string, 'value'=>string, 'attrs'=>array, 'attrsOnlyKey'=>array, 'end'=>bool, 'endSlash'=>bool], key tag - required
      *
      * @param array $offers
-     * @param string $currencyId default RUB
+     * @param string $currencyId default RUR
      * @param string $wrapTagName
      * @param string $tagName
      * @return string
      */
     public function offers(
         array $offers = [],
-        string $currencyId = 'RUB',
+        string $currencyId = 'RUR',
         string $wrapTagName = 'offers',
         string $tagName = 'offer'
     ): string {
