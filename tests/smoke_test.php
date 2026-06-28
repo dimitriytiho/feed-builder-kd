@@ -16,6 +16,7 @@ require __DIR__ . '/../src/Feeds/BuilderFeed.php';
 require __DIR__ . '/../src/Feeds/TemplateFeed.php';
 require __DIR__ . '/../src/Feeds/Writers/FeedWriterInterface.php';
 require __DIR__ . '/../src/Feeds/Writers/FileWriter.php';
+require __DIR__ . '/../src/Feeds/Writers/LaravelStorageThresholdWriter.php';
 require __DIR__ . '/../src/Feeds/GenerateFeed.php';
 
 use Dimitriytiho\FeedBuilderKd\Feeds\BuilderFeed;
@@ -132,6 +133,29 @@ $returned = GenerateFeed::run($name, $company, $url, $categories, $offers, '/tmp
 check('кастомный writer получил путь', $customWriter->path === '/tmp/feed.xml');
 check('кастомный writer получил контент', $customWriter->content !== '');
 check('run() вернул тот же контент, что записал writer', $returned === $customWriter->content);
+
+echo "\n== Порог-writer (маршрутизация по размеру) ==\n";
+
+$spySmall = new class implements FeedWriterInterface {
+    public bool $called = false;
+    public function write(string $path, string $content): void { $this->called = true; }
+};
+$spyLarge = new class implements FeedWriterInterface {
+    public bool $called = false;
+    public function write(string $path, string $content): void { $this->called = true; }
+};
+
+// Порог 10 байт, инжектим шпионов вместо реальных Storage-writer'ов
+$threshold = new Dimitriytiho\FeedBuilderKd\Feeds\Writers\LaravelStorageThresholdWriter(
+    null, 10, [], $spySmall, $spyLarge
+);
+
+$threshold->write('p', 'abc');            // 3 байта < 10 -> small
+check('маленький контент -> прямой writer', $spySmall->called && !$spyLarge->called);
+
+$spySmall->called = false;
+$threshold->write('p', str_repeat('x', 50)); // 50 байт >= 10 -> large
+check('большой контент -> потоковый writer', $spyLarge->called && !$spySmall->called);
 
 echo "\n== Прямое использование BuilderFeed ==\n";
 $b = new BuilderFeed();

@@ -110,4 +110,56 @@ use Dimitriytiho\FeedBuilderKd\Feeds\Writers\LaravelStorageStreamWriter;
 GenerateFeed::run($name, $company, $url, $categories, $offers, $putPath, $disk, 'RUR', null, new LaravelStorageStreamWriter($disk));
 ```
 
+### Рекомендуемый вариант — порог-writer: до 50МБ прямой put(), больше — потоковая заливка. Порог настраивается вторым аргументом (байты):
+```php
+use Dimitriytiho\FeedBuilderKd\Feeds\Writers\LaravelStorageThresholdWriter;
+
+GenerateFeed::run($name, $company, $url, $categories, $offers, $putPath, $disk, 'RUR', null, new LaravelStorageThresholdWriter($disk));
+// свой порог, например 100МБ: new LaravelStorageThresholdWriter($disk, 100 * 1024 * 1024)
+```
+
 ### Если вам не подходит данное решение через GenerateFeed::run вы можете по данному примеру создать свой класс и делать с контентом фида всё что угодно.
+
+---
+
+## JSON-фид (NDJSON / JSON Lines)
+
+Отдельный путь генерации, не связанный с XML. Формат — NDJSON: один JSON-объект на строку.
+- строка 1 — заголовок-обёртка: `{ "name", "company"?, "url"?, "currencyId"?, "date", "categories"? }` (обязателен только `name`, опциональные поля попадают в вывод только если переданы непустыми; `date` подставляется автоматически);
+- строки 2..N — по одному товару на строку.
+
+Экранирование выполняет `json_encode` с флагами `JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES` — кириллица читаемая, слеши в URL не экранируются.
+
+Формат `offer()` для JSON — плоский ассоциативный массив (без XML-понятий: тегов, атрибутов, CDATA, numberFormat). Типы сохраняются как есть (числа, bool, вложенные массивы):
+```php
+[
+    'id' => 100,
+    'name' => 'Кабель «Люкс»',
+    'url' => 'https://site.ru/p/100',
+    'price' => 1234.5,
+    'available' => true,
+    'categoryId' => 5,
+    'params' => ['Вес' => 1.5, 'Цвет' => 'белый'],
+]
+```
+
+Память: `$offers` принимается как `iterable` (массив, генератор, LazyCollection/cursor), строки пишутся потоково во временный файл. Заливка с тем же порогом: файл меньше 50МБ (параметр `thresholdBytes`) уходит прямым `put()`, больше — стримом (`Storage::writeStream`, multipart на S3) — весь фид в памяти не накапливается.
+```php
+use Dimitriytiho\FeedBuilderKd\Feeds\GenerateJsonFeed;
+
+GenerateJsonFeed::run(
+    name: 'Json Php', // обязательно
+    offers: $offersIterable, // массив или генератор плоских массивов
+    categories: $categories,
+    putPath: 'feed/1/feed.ndjson',
+    disk: 's3files', // Laravel-диск; без Laravel — пишется в файл по putPath
+    company: $company,
+    url: $url,
+    currencyId: 'RUR',
+);
+```
+
+## Команда обновления пакета
+```
+composer update dimitriytiho/feed-builder-kd
+```
