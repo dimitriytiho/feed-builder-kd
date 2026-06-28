@@ -56,7 +56,10 @@ class BuilderFeed
      */
     public function cdata(string|int|float|bool|null $content = null): string
     {
-        return "\n<![CDATA[{$content}]]>\n";
+        $content = $this->boolStr($content);
+        // Защита от закрывающей последовательности ]]> внутри значения
+        $content = str_replace(']]>', ']]]]><![CDATA[>', $content);
+        return "<![CDATA[{$content}]]>";
     }
 
     /**
@@ -72,21 +75,40 @@ class BuilderFeed
     }
 
     /**
+     * Экранирование спецсимволов XML (& < > " ') для текстовых значений.
+     * Внимание: не применяйте к уже экранированным данным, иначе будет двойное экранирование.
+     *
+     * @param string|int|float|bool|null $value
+     * @return string
+     */
+    public function escape(string|int|float|bool|null $value = null): string
+    {
+        return htmlspecialchars($this->boolStr($value), ENT_QUOTES | ENT_XML1, 'UTF-8');
+    }
+
+    /**
      * @param string $name
      * @param string|int|float|bool|null $value
      * @param string|null $unit
      * @param array $attrs
      * @param array $attrsOnlyKey
+     * @param bool $checkSpecialCharset
      * @return string
      */
-    public function param(string $name, string|int|float|bool|null $value = null, string|null $unit = null, array $attrs = [], array $attrsOnlyKey = []): string
-    {
-        $attr['name'] = $name;
+    public function param(
+        string $name,
+        string|int|float|bool|null $value = null,
+        string|null $unit = null,
+        array $attrs = [],
+        array $attrsOnlyKey = [],
+        bool $checkSpecialCharset = false
+    ): string {
+        $attr = ['name' => $name];
         if ($unit) {
             $attr['unit'] = $unit;
         }
         $attrs = array_merge($attr, $attrs);
-        return $this->tag('param', $value, $attrs, $attrsOnlyKey);
+        return $this->tag('param', $value, $attrs, $attrsOnlyKey, true, false, $checkSpecialCharset);
     }
 
     /**
@@ -99,8 +121,9 @@ class BuilderFeed
         $res = '';
         if ($attrs) {
             foreach ($attrs as $attrKey => $attrVal) {
-                if ($attrKey) {
+                if ($attrKey || $attrKey === '0' || $attrKey === 0) {
                     $attrVal = $this->boolStr($attrVal);
+                    $attrVal = htmlspecialchars($attrVal, ENT_QUOTES | ENT_XML1, 'UTF-8');
                     $res .= "{$attrKey}=\"{$attrVal}\" ";
                 }
             }
@@ -136,7 +159,7 @@ class BuilderFeed
      */
     protected function checkSpecialCharset(string|float|int|bool|null $string): bool
     {
-        $pattern = '/&(?!amp;|lt;|gt;|quot;|apos;)|[<>\'"]/';
+        $pattern = '/&(?!amp;|lt;|gt;|quot;|apos;)|[<>]/';
         return (bool) preg_match($pattern, $string);
     }
 
@@ -165,9 +188,9 @@ class BuilderFeed
      */
     public function titles(string $name, string $company, string $url): string
     {
-        $res = $this->tag('name', $name);
-        $res .= $this->tag('company', $company);
-        $res .= $this->tag('url', $url);
+        $res = $this->tag('name', $this->escape($name));
+        $res .= $this->tag('company', $this->escape($company));
+        $res .= $this->tag('url', $this->escape($url));
         return $res;
     }
 
@@ -202,7 +225,7 @@ class BuilderFeed
             if (!empty($cat['parent_id'])) {
                 $attrs['parentId'] = $cat['parent_id'];
             }
-            $res .= $this->tag('category', $cat['name'], $attrs);
+            $res .= $this->tag('category', $this->escape($cat['name']), $attrs);
         }
         return $this->wrap('categories', $res);
     }
@@ -270,14 +293,27 @@ class BuilderFeed
                 // Params
                 if (!empty($offer['params'])) {
                     foreach ($offer['params'] as $param) {
-                        if (!empty($tag['tag'])) {
+                        if (!empty($param['name'])) {
                             // Подготавливаем значение
                             $value = $this->prepareValue($param);
                             // Если установлено skipIfEmpty и значение пустое не отображаем параметр
                             if (!empty($param['skipIfEmpty']) && !$value) {
                                 continue;
                             }
-                            $tagsAndParams .= $this->param($param['name'], $value, $param['unit'] ?? null, $param['attrs'] ?? [], $param['attrsOnlyKey'] ?? []);
+                            // Экранирование значения
+                            $checkSpecialCharset = $param['checkSpecialCharset'] ?? false;
+                            if (!empty($param['cdata'])) {
+                                $value = $this->cdata($value);
+                                $checkSpecialCharset = false;
+                            }
+                            $tagsAndParams .= $this->param(
+                                $param['name'],
+                                $value,
+                                $param['unit'] ?? null,
+                                $param['attrs'] ?? [],
+                                $param['attrsOnlyKey'] ?? [],
+                                $checkSpecialCharset,
+                            );
                         }
                     }
                 }
@@ -311,8 +347,18 @@ class BuilderFeed
      */
     public function numberFormat(string|int|float|bool|null $value): string
     {
-        // Удаляем 0 с конца строки с помощью регулярного выражения
-        return (string) preg_replace('/\.0+$/', '', (float) $value);
+        $value = $this->boolStr($value);
+        // Не трогаем нечисловые значения, чтобы не терять данные
+        if (!is_numeric($value)) {
+            return $value;
+        }
+        // Убираем лишние нули только в дробной части, без приведения к float
+        // (приведение теряет точность и может дать экспоненциальную запись)
+        if (str_contains($value, '.')) {
+            $value = rtrim($value, '0');
+            $value = rtrim($value, '.');
+        }
+        return $value;
     }
 
     /**

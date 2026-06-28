@@ -72,10 +72,12 @@ $offers = [
 ];
 
 // Get content feed
-$feedTemplate = new FeedTemplate($name, $company, $url, $categories, $offers);
-$feed = $feedTemplate->content('RUR'); // Здесь используется шаблон из класса FeedTemplate, если данный шаблон не подходит, то создайте свой класс и по данному примеру, обязательно реализуйте метод content, например класс: \App\Feed\TemplateFeed.
+$feedTemplate = new TemplateFeed($name, $company, $url, $categories, $offers);
+$feed = $feedTemplate->content('RUR'); // Здесь используется шаблон из класса TemplateFeed, если данный шаблон не подходит, то создайте свой класс по данному примеру, обязательно реализуйте метод content, например класс: \App\Feed\TemplateFeed.
 
 ```
+
+### Поля name, company, url и названия категорий экранируются автоматически (метод BuilderFeed::escape()). Передавайте в них сырые данные — не экранируйте заранее, иначе получите двойное экранирование. Метод escape() публичный, его можно использовать и для своих значений.
 
 ### Если вы используете Laravel, то сохранение будет через Storage helper, иначе фид сохранится через file_put_contents
 ### Generate feed and save:
@@ -89,11 +91,16 @@ GenerateFeed::run(
     $categories,
     $offers,
     $putPath, // путь для сохранения фида
-    $disk // для Laravel можно передать имя диска, необязательный параметр
+    $disk, // для Laravel можно передать имя диска, необязательный параметр
     $currencyId, // по-умолчанию RUR, можно передать любую другую валюту
     $customClassTemplateFeed // по-умолчанию встроенный шаблон, можно передать название своего класса шаблона фида, например: \App\Feed\TemplateFeed::class
 );
+```
+
+### Сохранение фида вынесено в отдельные writer-классы (Writers/FileWriter, Writers/LaravelStorageWriter). По-умолчанию обработчик определяется автоматически: Laravel Storage, если доступен, иначе file_put_contents. При необходимости можно передать свой обработчик последним аргументом (реализует Writers\FeedWriterInterface):
+```php
+GenerateFeed::run($name, $company, $url, $categories, $offers, $putPath, null, 'RUR', null, new MyCustomWriter());
+```
+### Метод GenerateFeed::run() теперь возвращает сгенерированный контент фида (строку), что не влияет на существующие вызовы.
 
 ### Если вам не подходит данное решение через GenerateFeed::run вы можете по данному примеру создать свой класс и делать с контентом фида всё что угодно.
-
-```
