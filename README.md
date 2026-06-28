@@ -103,4 +103,11 @@ GenerateFeed::run($name, $company, $url, $categories, $offers, $putPath, null, '
 ```
 ### Метод GenerateFeed::run() теперь возвращает сгенерированный контент фида (строку), что не влияет на существующие вызовы.
 
+### Для больших фидов и S3 используйте потоковый writer (запись во временный файл + Storage::writeStream, multipart upload, меньше памяти на заливке):
+```php
+use Dimitriytiho\FeedBuilderKd\Feeds\Writers\LaravelStorageStreamWriter;
+
+GenerateFeed::run($name, $company, $url, $categories, $offers, $putPath, $disk, 'RUR', null, new LaravelStorageStreamWriter($disk));
+```
+
 ### Если вам не подходит данное решение через GenerateFeed::run вы можете по данному примеру создать свой класс и делать с контентом фида всё что угодно.
