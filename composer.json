@@ -1,12 +1,11 @@
 {
     "name": "dimitriytiho/feed-builder-kd",
-    "description": "Feed xml generator",
+    "description": "Feed xml and json (NDJSON) generator",
     "homepage": "https://github.com/dimitriytiho/feed-builder-kd",
-    "version": "2.3.0",
     "type": "library",
     "license": "ISC",
     "keywords": [
-        "feed", "xml", "php"
+        "feed", "xml", "json", "ndjson", "php"
     ],
     "require": {
         "php": ">=8.1"
